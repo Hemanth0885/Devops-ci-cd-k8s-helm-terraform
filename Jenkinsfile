@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = 'dockerhub-creds' // Jenkins credentials ID
-        DOCKER_HUB_USERNAME = 'he40133895'         // Docker Hub username
+        DOCKER_HUB_CREDENTIALS = 'dockerhub-creds' // Jenkins creds id
+        DOCKER_HUB_USERNAME = 'he40133895'         // username
         IMAGE_NAME = 'sampleapp'
         IMAGE_TAG = '1.0'
     }
@@ -11,53 +11,42 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clone the GitHub repo
-                git branch: 'main', url: 'https://github.com/Hemanth0885/Devops-ci-cd-k8s-helm-terraform'
+                git branch: 'main', url: 'https://github.com/Hemanth0885/Devops-ci-cd-k8s-helm-terraform.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Build Docker image from app folder
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ./app"
-                }
-            }
-        }
-
-        stage('Tag Image') {
-            steps {
-                script {
-                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                }
+                sh """
+                   docker build \
+                   -t ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} \
+                   ./app/sampleapp/sampleapp
+                """
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    // Login to Docker Hub using credentials stored in Jenkins
-                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", 
-                                                     usernameVariable: 'USERNAME', 
-                                                     passwordVariable: 'PASSWORD')]) {
-                        sh "echo $PASSWORD | docker login -u $USERNAME --password-stdin"
-                        sh "docker push ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKER_HUB_CREDENTIALS}",
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh """
+                       echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                       docker push ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                    """
                 }
             }
         }
     }
 
     post {
-        always {
-            echo "Pipeline finished"
-        }
         success {
-            echo "Docker image pushed successfully!"
+            echo "Docker image pushed successfully to Docker Hub"
         }
         failure {
-            echo "Something went wrong!"
+            echo "Pipeline failed"
         }
     }
 }
-
