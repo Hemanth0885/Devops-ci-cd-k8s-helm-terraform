@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDENTIALS = 'dockerhub-creds' // Jenkins credentials ID
-        DOCKER_HUB_USERNAME = 'he40133895'         // Your Docker Hub username
+        DOCKER_HUB_USERNAME = 'he40133895'         // Docker Hub username
         IMAGE_NAME = 'sampleapp'
         IMAGE_TAG = '1.0'
     }
@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone the GitHub repo
-                git branch: 'main', url: 'https://github.com/<your-username>/<repo-name>.git'
+                git branch: 'main', url: 'https://github.com/Hemanth0885/Devops-ci-cd-k8s-helm-terraform'
             }
         }
 
@@ -60,3 +60,4 @@ pipeline {
         }
     }
 }
+
